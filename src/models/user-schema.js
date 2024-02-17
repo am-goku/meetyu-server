@@ -1,7 +1,6 @@
 import { Schema, model } from "mongoose";
 
 
-
 const userSchema = new Schema({
     name: {
         type: String,
@@ -21,10 +20,16 @@ const userSchema = new Schema({
     profile_pic: {
         type: String,
         require: false
+    },
+
+    varified: {
+        type: Boolean,
+        require: true,
+        default: false
     }
 
 }, {
     timestamps: true
 })
 
-export default User = model('user', userSchema)
+export const User = model('user', userSchema)

@@ -5,6 +5,7 @@ import cors from "cors";
 //importing routers
 import user_router from "./src/routes/user.js";
 import httpMethodsMiddleware from "./src/middlewares/httpMethodsMiddleware.js";
+import connect_db from "./src/config/db.js";
 
 
 //common variables
@@ -23,9 +24,13 @@ app.use(express.json());
 //dotenv configuration
 dotenv.config();
 
+//database connection
+connect_db()
+
 
 //preflight
 app.use(httpMethodsMiddleware);
+
 
 
 
