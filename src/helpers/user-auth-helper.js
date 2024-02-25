@@ -65,6 +65,7 @@ export const register_helper = ({name, email, pass, confPass}) => {
             await newUser.save();
 
             const token = crypto.randomBytes(96).toString("hex");
+            console.log(token)
 
             sent_verification_mail(email, name, token)
 
