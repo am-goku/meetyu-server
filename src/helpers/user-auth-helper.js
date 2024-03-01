@@ -71,6 +71,7 @@ export const register_helper = ({name, email, pass, confPass}) => {
 
             resolve({ status: 200, message: "Verify you email." });
         } catch (error) {
+          console.log("error in resgister helper open=>", err)
             reject({status: 500, message: "Internal server error", error})
         }
     })
