@@ -5,31 +5,48 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+export async function sent_verification_mail(email, name, token) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const transporter = createTransport({
+        host: "smtp.gmail.com",
+        port: 587,
+        secure: false,
+        auth: {
+          user: process.env.NM_MAIL,
+          pass: process.env.NM_PASSWORD,
+        },
+        tls: {
+          rejectUnauthorized: false,
+        },
+      });
 
+      const link = `${process.env.BASE_URL}/verification/auth/user/${email}/${token}`;
+      const template = verificationMail(name, link);
 
-export async function sent_verification_mail (email, name, token) {
-    const transporter = createTransport({
-      host: "smtp.gmail.com",
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.NM_MAIL,
-        pass: process.env.NM_PASSWORD,
-      },
-      tls: {
-        rejectUnauthorized: false,
-      },
-    });
-
-    const link = `${process.env.BASEURL}/api/v1/auth/verify/${email}/${token}`
-    const template = verificationMail(name, link)
-
-    await transporter.sendMail({
-      from: process.env.NM_MAIL,
-      to: email,
-      subject: "Meetyu Verification",
-      html: template
-    })
-
-    return
+      await transporter
+        .sendMail({
+          from: process.env.NM_MAIL,
+          to: email,
+          subject: "Meetyu Verification",
+          html: template,
+        })
+        .then(() => {
+          resolve({
+            message: "Verification mail sent successfully.",
+          });
+        })
+        .catch((err) => {
+          reject({
+            err,
+            message: "Error sending verification mail",
+          });
+        });
+    } catch (error) {
+      reject({
+        error,
+        message: "Error sending verification mail",
+      });
+    }
+  });
 }

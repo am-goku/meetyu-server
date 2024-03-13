@@ -20,5 +20,9 @@ export const login_controller = (req, res) => {
 // @Route  POST /api/v1/user/register
 // @access Public
 export const register_controller = (req, res) => {
-    register_helper(req?.body)
+    register_helper(req?.body).then((data) => {
+        responseHandler(res, data)
+    }).catch((err) => {
+        responseHandler(res, err)
+    })
 }

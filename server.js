@@ -1,9 +1,11 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import logger from "morgan";
 
 //importing routers
 import user_router from "./src/routes/user.js";
+import auth_router from "./src/routes/auth.js";
 import httpMethodsMiddleware from "./src/middlewares/httpMethodsMiddleware.js";
 import connect_db from "./src/config/db.js";
 
@@ -14,6 +16,8 @@ const log = console.log
 
 //express configuration
 const app = express();
+
+app.use(logger("dev"))
 
 //cors setup
 app.use(cors())
@@ -37,6 +41,7 @@ app.use(httpMethodsMiddleware);
 
 //router level setup
 app.use('/api/v1/user', user_router)
+app.use('/verification', auth_router)
 
 
 app.listen(PORT, () => {

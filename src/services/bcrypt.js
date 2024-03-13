@@ -23,7 +23,7 @@ export const hash_password = async (password) => {
 
 // @desc   Compare password
 // @access Private
-export const compare_password = async ({password, hashedPassword}) => {
+export const compare_password = async (password, hashedPassword) => {
     try {
         return await new Promise( async (resolve, reject) => {
             const flag = await bcrypt.compare(password, hashedPassword)

@@ -8,6 +8,12 @@ const messageSchema = new Schema({
         require: false,
     },
 
+    type: {
+        type: String,   //message types [text, image, voice, link, video]
+        required: true,
+        default: "text"
+    },
+
     image: {
         type: String,
         require: false
@@ -16,6 +22,7 @@ const messageSchema = new Schema({
     roomId: {
         type: mongoose.Types.ObjectId,
         ref: 'chatroom',
+        required: true
     },
 
     global: {
@@ -34,7 +41,7 @@ const messageSchema = new Schema({
         require: false
     }
 }, {
-    timestamps: true
+    timestamps: true,
 })
 
 
