@@ -22,7 +22,19 @@ const userSchema = new Schema({
         require: false
     },
 
-    varified: {
+    emailVerified: {
+        type: Boolean,
+        require: true,
+        default: false
+    },
+
+    verified: {
+        type: Boolean,
+        require: true,
+        default: false
+    },
+
+    blocked: {
         type: Boolean,
         require: true,
         default: false

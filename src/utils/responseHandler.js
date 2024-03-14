@@ -2,8 +2,11 @@ export default function responseHandler(res, data) {
   try {
     switch (data?.status) {
       case 200:
-        res.status(200).send(data);
+        res.status(200).send({...data, status_code: "OK"});
         break;
+
+      case 201:
+        res.status(200).send({...data, status_code: "CREATED"});
 
       case 400:
         res.status(400).send({ ...data, error_code: "BAD_REQUEST" });
@@ -23,6 +26,10 @@ export default function responseHandler(res, data) {
 
       case 409:
         res.status(409).send({ ...data, error_code: "CONFLICT" });
+        break;
+
+      case 410:
+        res.status(410).send({ ...data, error_code: "TOKEN_EXPIRED" });
         break;
 
       case 500:

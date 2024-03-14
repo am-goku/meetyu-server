@@ -41,7 +41,7 @@ app.use(httpMethodsMiddleware);
 
 //router level setup
 app.use('/api/v1/user', user_router)
-app.use('/verification', auth_router)
+app.use("/api/v1/auth", auth_router);
 
 
 app.listen(PORT, () => {

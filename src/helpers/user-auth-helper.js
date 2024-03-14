@@ -1,8 +1,9 @@
+import { Auth } from "../models/auth-schema.js";
 import { User } from "../models/user-schema.js";
 import { compare_password, hash_password } from "../services/bcrypt.js";
 import { sign_access_token, sign_refresh_token } from "../services/jwt.js";
 import { sent_verification_mail } from "../services/nodemailer.js";
-import crypto from "crypto"
+import crypto from "crypto";
 
 // @desc   User login
 // @Route  POST /api/v1/user/login
@@ -28,10 +29,15 @@ export const login_helper = ({ email, password }) => {
           email: user?.email,
         }); //Fetching the refresh token
 
-        const transformedUser = user.toObject() //Converting the mongoose document object to plain object
-        delete transformedUser.password //deleining the password from user data
+        const transformedUser = user.toObject(); //Converting the mongoose document object to plain object
+        delete transformedUser.password; //deleining the password from user data
 
-        resolve({ status:200, accessToken, refreshToken, user: transformedUser });
+        resolve({
+          status: 200,
+          accessToken,
+          refreshToken,
+          user: transformedUser,
+        });
       }
     } catch (error) {
       reject({ status: 500, message: "Server error" });
@@ -57,22 +63,53 @@ export const register_helper = ({ name, email, pass, confPass }) => {
           message: "Email has already been registerd.",
         });
 
+      const token = crypto.randomBytes(96).toString("hex"); //Generating token for sending authmail
+
       const newUser = new User({
         email,
         password: await hash_password(pass),
         name,
       });
-
-      const token = crypto.randomBytes(96).toString("hex"); //Generating token for sending authmail
+      const newAuth = new Auth({ email, token });
 
       sent_verification_mail(email, name, token)
         .then(async (response) => {
+          await newAuth.save();
           await newUser.save();
           resolve({ status: 200, ...response });
         })
         .catch((err) => {
-          console.log(err)
+          console.log(err);
           reject({ status: 500, ...err });
+        });
+    } catch (error) {
+      reject({ status: 500, message: "Internal server error", error });
+    }
+  });
+};
+
+// @desc   Email verification
+// @Route  POST /api/v1/auth/:email/verify/:token
+// @access Public
+export const auth_helper = ({ token, email }) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const currentTime = new Date();
+      Auth.findOne({ email, token })
+        .then(async (auth) => {
+          const createdAt = auth.createdAt;
+          const diffInMs = currentTime - createdAt;
+          const diffInHrs = diffInMs / (1000 * 60 * 60);
+
+          if (diffInHrs > 24) {
+            return reject({ status: 410, message: "Token has been expired" });
+          }
+
+          await User.updateOne({ email }, { $set: { emailVerified: true } });
+          resolve({ status: 200, message: "Email has been verified." });
+        })
+        .catch((err) => {
+          reject({ status: 410, message: "Token is not valid", err });
         });
     } catch (error) {
       reject({ status: 500, message: "Internal server error", error });

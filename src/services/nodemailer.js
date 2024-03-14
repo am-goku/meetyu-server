@@ -21,7 +21,10 @@ export async function sent_verification_mail(email, name, token) {
         },
       });
 
-      const link = `${process.env.BASE_URL}/verification/auth/user/${email}/${token}`;
+      //imp
+      //Has to change the link upon the client site requirements.
+      //Current link should be removed and should replace with client side link.
+      const link = `${process.env.BASE_URL}/api/v1/auth/${email}/verify/${token}`;
       const template = verificationMail(name, link);
 
       await transporter
