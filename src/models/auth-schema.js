@@ -3,12 +3,12 @@ import { Schema, model } from "mongoose";
 const authSchema = new Schema({
   email: {
     type: String,
-    required: true
+    require: true
   },
 
   token: {
     type: String,
-    required: true
+    require: true
   }
 
 }, {

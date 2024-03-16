@@ -37,8 +37,8 @@ export async function sign_refresh_token(payload) {
 export async function decode_token(token) {
   return new Promise((resolve, reject) => {
     try {
-      token = token.splt(" ");  //Splitting 'Bearer' from token
-      const data = jwt.decode(token[1]);
+      token = token.split(" ");  //Splitting 'Bearer' from token
+      const data = jwt.decode(token[1])
       resolve(data);
     } catch (error) {
       reject(error);

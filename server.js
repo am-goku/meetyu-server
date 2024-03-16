@@ -6,6 +6,7 @@ import logger from "morgan";
 //importing routers
 import user_router from "./src/routes/user.js";
 import auth_router from "./src/routes/auth.js";
+import chat_router from "./src/routes/chat.js";
 import httpMethodsMiddleware from "./src/middlewares/httpMethodsMiddleware.js";
 import connect_db from "./src/config/db.js";
 
@@ -40,8 +41,9 @@ app.use(httpMethodsMiddleware);
 
 
 //router level setup
-app.use('/api/v1/user', user_router)
+app.use("/api/v1/user", user_router);
 app.use("/api/v1/auth", auth_router);
+app.use("/api/v1/chat", chat_router);
 
 
 app.listen(PORT, () => {

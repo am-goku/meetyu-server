@@ -23,10 +23,12 @@ export const login_helper = ({ email, password }) => {
         const accessToken = await sign_access_token({
           userId: user?._id,
           email: user?.email,
+          role: user?.role
         }); //Fetch the access token
         const refreshToken = await sign_refresh_token({
           userId: user?._id,
           email: user?.email,
+          role: user?.role
         }); //Fetching the refresh token
 
         const transformedUser = user.toObject(); //Converting the mongoose document object to plain object
@@ -111,6 +113,30 @@ export const auth_helper = ({ token, email }) => {
         .catch((err) => {
           reject({ status: 410, message: "Token is not valid", err });
         });
+    } catch (error) {
+      reject({ status: 500, message: "Internal server error", error });
+    }
+  });
+};
+
+
+// @desc   Token refresh
+// @Route  POST /api/v1/auth/refresh-token
+// @access Public
+export const tokenRefresh_helper = ( user ) => {
+  return new Promise((resolve, reject) => {
+    try {
+      const newAccessToken = sign_access_token({
+        userId: user?._id,
+        email: user?.email,
+        role: user?.role,
+      });
+
+      return resolve({
+        status: 200,
+        message: "Created new access token",
+        newAccessToken,
+      });
     } catch (error) {
       reject({ status: 500, message: "Internal server error", error });
     }

@@ -1,5 +1,6 @@
 export default function responseHandler(res, data) {
   try {
+    console.log(data);
     switch (data?.status) {
       case 200:
         res.status(200).send({...data, status_code: "OK"});
@@ -7,6 +8,7 @@ export default function responseHandler(res, data) {
 
       case 201:
         res.status(200).send({...data, status_code: "CREATED"});
+        break;
 
       case 400:
         res.status(400).send({ ...data, error_code: "BAD_REQUEST" });
