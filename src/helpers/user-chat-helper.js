@@ -96,3 +96,13 @@ export const remove_admin_hlpr = (roomId, adminId, userId) => {
     }
   });
 };
+
+// export const add_admin_hlpr = (roomId, userId, adminId) => {
+//   return new Promise(async (resolve, reject) => {
+//     try {
+//       if()
+//     } catch (error) {
+//       reject({ status: 400, message: "Internal server error", error });
+//     }
+//   });
+// }
