@@ -11,7 +11,7 @@ const chatRoomSchema = new Schema({
     require: false,
   },
 
-  room_profile: {
+  icon: {
     type: String,
     require: false,
   },
