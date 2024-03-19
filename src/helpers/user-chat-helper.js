@@ -10,10 +10,13 @@ const chatroom_operations = {
   create_chatroom_hlpr: (userId, participants, room_name) => {
     return new Promise(async (resolve, reject) => {
       try {
-        
         participants.push(userId);
 
-        if(participants.length < 3) return reject({status: 400, message: "Atleast 3 participants are required."})
+        if (participants.length < 3)
+          return reject({
+            status: 400,
+            message: "Atleast 3 participants are required.",
+          });
 
         const newRoom = new Chatroom({
           users: participants.sort(),
@@ -114,7 +117,6 @@ const chatroom_operations = {
   },
 };
 
-
 //@desc   Chatroom Ownership Operations
 const chatroom_ownership = {
   /*
@@ -128,7 +130,7 @@ const chatroom_ownership = {
       try {
         Chatroom.updateOne(
           { _id: roomId, owner: userId },
-          { $pull: {room_admins: adminId} }
+          { $pull: { room_admins: adminId } }
         )
           .then((response) => {
             resolve({ status: 200, message: "Admin removed successfully." });
@@ -157,7 +159,7 @@ const chatroom_ownership = {
       try {
         Chatroom.updateOne(
           { _id: roomId, owner: userId },
-          { $addToSet: {room_admins: adminId} }
+          { $addToSet: { room_admins: adminId } }
         )
           .then((response) => {
             resolve({ status: 200, message: "Admin added successfully" });
@@ -174,15 +176,37 @@ const chatroom_ownership = {
       }
     });
   },
-};
 
+  /*
+    @desc   Change chatroom ownership.
+    @Route  PATCH /api/v1/chat/change-owner/:roomId
+    @Body   {roomId, userId, adminId}
+    @access Protected - (Authenticated user)
+  */
+  change_owner_hlpr: (roomId, userId, adminId) => {
+    return new Promise((resolve, reject) => {
+      try {
+        Chatroom.updateOne({_id: roomId, owner: userId}, {$set: {owner: adminId}}, {new: true}).then((chatroom) => {
+          resolve({status: 200, message: "Owner has been updated.", chatroom})
+        }).catch((error) => {
+          reject({status: 400, message: "Error updating owner.", error})
+        })
+      } catch (error) {
+        reject({status: 500, message: "Internal server error.", error})
+      }
+    })
+  },
+
+
+
+};
 
 //@desc   Chatroom Ownership Operations
 const chatroom_user_managemet = {
   /*
     @desc   Add new user/users to chat room.
     @Route  POST /api/v1/chat/add-users/:roomId
-    @Body   {users:[Array]}
+    @Body   {participants:[Array]}
     @access Protected - (Authenticated user)
   */
   add_user_hlpr: (roomId, userId, participants) => {
@@ -207,7 +231,7 @@ const chatroom_user_managemet = {
   /*
     @desc   Delete user/users from chat room.
     @Route  DELETE /api/v1/chat/remove-users/:roomId
-    @Body   {users:[Array]}
+    @Body   {participants:[Array]}
     @access Protected - (Authenticated user)
   */
   remove_user_hlpr: (roomId, userId, participants) => {
@@ -228,10 +252,9 @@ const chatroom_user_managemet = {
       }
     });
   },
-
-
-
 };
+
+
 
 
 export const {
@@ -241,6 +264,11 @@ export const {
   update_chatroom_hlpr,
   remove_admin_hlpr,
   add_admin_hlpr,
+  change_owner_hlpr,
   add_user_hlpr,
   remove_user_hlpr,
-} = { ...chatroom_operations, ...chatroom_ownership, ...chatroom_user_managemet };
+} = {
+  ...chatroom_operations,
+  ...chatroom_ownership,
+  ...chatroom_user_managemet,
+};

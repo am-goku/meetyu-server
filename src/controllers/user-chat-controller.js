@@ -1,4 +1,4 @@
-import { add_admin_hlpr, create_chatroom_hlpr, delete_chatrooms_hlpr, get_chatrooms_hlpr, remove_admin_hlpr, update_chatroom_hlpr } from "../helpers/user-chat-helper.js";
+import { add_admin_hlpr, add_user_hlpr, change_owner_hlpr, create_chatroom_hlpr, delete_chatrooms_hlpr, get_chatrooms_hlpr, remove_admin_hlpr, remove_user_hlpr, update_chatroom_hlpr } from "../helpers/user-chat-helper.js";
 import responseHandler from "../utils/responseHandler.js";
 
 
@@ -130,3 +130,70 @@ export const update_chatroom = (req, res) => {
     responseHandler(res, error);
   }
 };
+
+
+/*
+    @desc   Add new user/users to chat room.
+    @Route  POST /api/v1/chat/add-users/:roomId
+    @Body   {participants:[Array]}
+    @access Protected - (Authenticated user)
+*/
+export const add_user = (req, res) => {
+    try {
+        const {roomId} = req.params;
+        const userId = req.user?._id;
+        const {participants} = req.body;
+
+        add_user_hlpr(roomId, userId, participants).then((data) => {
+            responseHandler(res, data);
+        }).catch((error) => {
+            responseHandler(res, error);
+        })
+    } catch (error) {
+        responseHandler(res, error)
+    }
+}
+
+
+/*
+    @desc   Delete user/users from chat room.
+    @Route  DELETE /api/v1/chat/remove-users/:roomId
+    @Body   {participants:[Array]}
+    @access Protected - (Authenticated user)
+*/
+export const remove_user = (req, res) => {
+    try {
+        const {roomId} = req.params;
+        const userId = req.user?._id;
+        const {participants} = req.body;
+
+        remove_user_hlpr(roomId, userId, participants).then((data) => {
+            responseHandler(res, data);
+        }).catch((error) => {
+            responseHandler(res, error);
+        })
+    } catch (error) {
+        responseHandler(res, error);
+    }
+}
+
+
+/*
+    @desc   Change chatroom ownership.
+    @Route  PATCH /api/v1/chat/change-owner/:roomId/:adminId
+    @Body   {roomId, userId, adminId}
+    @access Protected - (Authenticated user)
+*/
+export const change_owner = (req, res) => {
+    try {
+        const {roomId, adminId} = req.params;
+        const userId = req.user._id;
+        change_owner_hlpr(roomId, userId, adminId).then((data) => {
+            responseHandler(res, data);
+        }).catch((error) => {
+            responseHandler(res, error);
+        })
+    } catch (error) {
+        responseHandler(res, error);
+    }
+}
