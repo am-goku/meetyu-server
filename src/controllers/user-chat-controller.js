@@ -1,7 +1,15 @@
-import { add_admin_hlpr, add_user_hlpr, change_owner_hlpr, create_chatroom_hlpr, delete_chatrooms_hlpr, get_chatrooms_hlpr, remove_admin_hlpr, remove_user_hlpr, update_chatroom_hlpr } from "../helpers/user-chat-helper.js";
+import {
+  add_admin_hlpr,
+  add_user_hlpr,
+  change_owner_hlpr,
+  create_chatroom_hlpr,
+  delete_chatrooms_hlpr,
+  get_chatrooms_hlpr,
+  remove_admin_hlpr,
+  remove_user_hlpr,
+  update_chatroom_hlpr,
+} from "../helpers/user-chat-helper.js";
 import responseHandler from "../utils/responseHandler.js";
-
-
 
 /*
     @desc   Create chat room for Single and group chats.
@@ -9,22 +17,21 @@ import responseHandler from "../utils/responseHandler.js";
     @access Protected - (Authenticated user)
 */
 export const create_chat_room = (req, res) => {
-    try {
-        const userId = req.user?._id;
-        const { participants, room_name } = req.body;
+  try {
+    const userId = req.user?._id;
+    const { participants, room_name } = req.body;
 
-        create_chatroom_hlpr(userId, participants, room_name)
-          .then((data) => {
-            responseHandler(res, data);
-          })
-          .catch((err) => {
-            responseHandler(res, err);
-          });
-    } catch (error) {
-        responseHandler(res, error);
-    }
-}
-
+    create_chatroom_hlpr(userId, participants, room_name)
+      .then((data) => {
+        responseHandler(res, data);
+      })
+      .catch((err) => {
+        responseHandler(res, err);
+      });
+  } catch (error) {
+    responseHandler(res, error);
+  }
+};
 
 /*
     @desc   Get char tooms of a particular user.
@@ -32,18 +39,19 @@ export const create_chat_room = (req, res) => {
     @access Protected - (Authenticated user)
 */
 export const get_chat_rooms = (req, res) => {
-    try {
-        const userId = req.user?._id;
-        get_chatrooms_hlpr(userId).then((data) => {
-            responseHandler(res, data);
-        }).catch((err) => {
-            responseHandler(res, err)
-        })
-    } catch (error) {
-        responseHandler(res, error)
-    }
-}
-
+  try {
+    const userId = req.user?._id;
+    get_chatrooms_hlpr(userId)
+      .then((data) => {
+        responseHandler(res, data);
+      })
+      .catch((err) => {
+        responseHandler(res, err);
+      });
+  } catch (error) {
+    responseHandler(res, error);
+  }
+};
 
 /*
     @desc   Delete a chat room.
@@ -52,19 +60,20 @@ export const get_chat_rooms = (req, res) => {
     @access Protected - (Authenticated user)
 */
 export const delete_chatroom = (req, res) => {
-    try {
-        const {roomId} = req.body;
-        const userId = req.user._id;
-        delete_chatrooms_hlpr(roomId, userId).then((data) => {
-            responseHandler(res, data)
-        }).catch((error) => {
-            responseHandler(res, error)
-        })
-    } catch (error) {
-        responseHandler(res, error)
-    }
-}
-
+  try {
+    const { roomId } = req.body;
+    const userId = req.user._id;
+    delete_chatrooms_hlpr(roomId, userId)
+      .then((data) => {
+        responseHandler(res, data);
+      })
+      .catch((error) => {
+        responseHandler(res, error);
+      });
+  } catch (error) {
+    responseHandler(res, error);
+  }
+};
 
 /*
     @desc   Add new admin to a chat room.
@@ -73,19 +82,20 @@ export const delete_chatroom = (req, res) => {
     @access Protected - (Authenticated user)
 */
 export const add_admin = (req, res) => {
-    try {
-        const {roomId, adminId} = req.body;
-        const userId = req.user._id;
-        add_admin_hlpr(roomId, userId, adminId).then((data) => {
-            responseHandler(res, data);
-        }).catch((error) => {
-            responseHandler(res, error);
-        })
-    } catch (error) {
-        responseHandler(res, error)
-    }
-}
-
+  try {
+    const { roomId, adminId } = req.body;
+    const userId = req.user._id;
+    add_admin_hlpr(roomId, userId, adminId)
+      .then((data) => {
+        responseHandler(res, data);
+      })
+      .catch((error) => {
+        responseHandler(res, error);
+      });
+  } catch (error) {
+    responseHandler(res, error);
+  }
+};
 
 /*
     @desc   Remove an admin from a chat room.
@@ -94,19 +104,20 @@ export const add_admin = (req, res) => {
     @access Protected - (Authenticated user)
 */
 export const remove_admin = (req, res) => {
-    try {
-        const {roomId, adminId} = req.body;
-        const userId = req.user._id;
-        remove_admin_hlpr(roomId, adminId, userId).then((data) => {
-            responseHandler(res, data)
-        }).catch((error) => {
-            responseHandler(res, error)
-        })
-    } catch (error) {
-        responseHandler(res, error)
-    }
-}
-
+  try {
+    const { roomId, adminId } = req.body;
+    const userId = req.user._id;
+    remove_admin_hlpr(roomId, adminId, userId)
+      .then((data) => {
+        responseHandler(res, data);
+      })
+      .catch((error) => {
+        responseHandler(res, error);
+      });
+  } catch (error) {
+    responseHandler(res, error);
+  }
+};
 
 /*
     @desc   Update a chat room.
@@ -131,7 +142,6 @@ export const update_chatroom = (req, res) => {
   }
 };
 
-
 /*
     @desc   Add new user/users to chat room.
     @Route  POST /api/v1/chat/add-users/:roomId
@@ -139,21 +149,22 @@ export const update_chatroom = (req, res) => {
     @access Protected - (Authenticated user)
 */
 export const add_user = (req, res) => {
-    try {
-        const {roomId} = req.params;
-        const userId = req.user?._id;
-        const {participants} = req.body;
+  try {
+    const { roomId } = req.params;
+    const userId = req.user?._id;
+    const { participants } = req.body;
 
-        add_user_hlpr(roomId, userId, participants).then((data) => {
-            responseHandler(res, data);
-        }).catch((error) => {
-            responseHandler(res, error);
-        })
-    } catch (error) {
-        responseHandler(res, error)
-    }
-}
-
+    add_user_hlpr(roomId, userId, participants)
+      .then((data) => {
+        responseHandler(res, data);
+      })
+      .catch((error) => {
+        responseHandler(res, error);
+      });
+  } catch (error) {
+    responseHandler(res, error);
+  }
+};
 
 /*
     @desc   Delete user/users from chat room.
@@ -162,21 +173,22 @@ export const add_user = (req, res) => {
     @access Protected - (Authenticated user)
 */
 export const remove_user = (req, res) => {
-    try {
-        const {roomId} = req.params;
-        const userId = req.user?._id;
-        const {participants} = req.body;
+  try {
+    const { roomId } = req.params;
+    const userId = req.user?._id;
+    const { participants } = req.body;
 
-        remove_user_hlpr(roomId, userId, participants).then((data) => {
-            responseHandler(res, data);
-        }).catch((error) => {
-            responseHandler(res, error);
-        })
-    } catch (error) {
+    remove_user_hlpr(roomId, userId, participants)
+      .then((data) => {
+        responseHandler(res, data);
+      })
+      .catch((error) => {
         responseHandler(res, error);
-    }
-}
-
+      });
+  } catch (error) {
+    responseHandler(res, error);
+  }
+};
 
 /*
     @desc   Change chatroom ownership.
@@ -185,15 +197,17 @@ export const remove_user = (req, res) => {
     @access Protected - (Authenticated user)
 */
 export const change_owner = (req, res) => {
-    try {
-        const {roomId, adminId} = req.params;
-        const userId = req.user._id;
-        change_owner_hlpr(roomId, userId, adminId).then((data) => {
-            responseHandler(res, data);
-        }).catch((error) => {
-            responseHandler(res, error);
-        })
-    } catch (error) {
+  try {
+    const { roomId, adminId } = req.params;
+    const userId = req.user._id;
+    change_owner_hlpr(roomId, userId, adminId)
+      .then((data) => {
+        responseHandler(res, data);
+      })
+      .catch((error) => {
         responseHandler(res, error);
-    }
-}
+      });
+  } catch (error) {
+    responseHandler(res, error);
+  }
+};

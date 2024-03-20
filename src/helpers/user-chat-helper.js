@@ -186,19 +186,26 @@ const chatroom_ownership = {
   change_owner_hlpr: (roomId, userId, adminId) => {
     return new Promise((resolve, reject) => {
       try {
-        Chatroom.updateOne({_id: roomId, owner: userId}, {$set: {owner: adminId}}, {new: true}).then((chatroom) => {
-          resolve({status: 200, message: "Owner has been updated.", chatroom})
-        }).catch((error) => {
-          reject({status: 400, message: "Error updating owner.", error})
-        })
+        Chatroom.updateOne(
+          { _id: roomId, owner: userId },
+          { $set: { owner: adminId } },
+          { new: true }
+        )
+          .then((chatroom) => {
+            resolve({
+              status: 200,
+              message: "Owner has been updated.",
+              chatroom,
+            });
+          })
+          .catch((error) => {
+            reject({ status: 400, message: "Error updating owner.", error });
+          });
       } catch (error) {
-        reject({status: 500, message: "Internal server error.", error})
+        reject({ status: 500, message: "Internal server error.", error });
       }
-    })
+    });
   },
-
-
-
 };
 
 //@desc   Chatroom Ownership Operations
@@ -253,9 +260,6 @@ const chatroom_user_managemet = {
     });
   },
 };
-
-
-
 
 export const {
   create_chatroom_hlpr,
