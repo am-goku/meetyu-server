@@ -9,6 +9,7 @@ import auth_router from "./src/routes/auth.js";
 import chat_router from "./src/routes/chat.js";
 import httpMethodsMiddleware from "./src/middlewares/httpMethodsMiddleware.js";
 import connect_db from "./src/config/db.js";
+import { User } from "./src/models/user-schema.js";
 
 
 //common variables
@@ -35,9 +36,6 @@ connect_db()
 
 //preflight
 app.use(httpMethodsMiddleware);
-
-
-
 
 
 //router level setup
