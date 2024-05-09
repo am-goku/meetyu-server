@@ -27,6 +27,11 @@ const userSchema = new Schema({
         require: false
     },
 
+    dob: {
+        type: Date,
+        require: false
+    },
+
     emailVerified: {
         type: Boolean,
         require: true,
