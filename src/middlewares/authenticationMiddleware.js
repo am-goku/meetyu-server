@@ -9,7 +9,7 @@ import responseHandler from "../utils/responseHandler.js"
 // @access Public
 export const userAuth = (req, res, next) => {
     try {
-        const token = req.headers["authorization"];
+        let token = req.headers["authorization"];
         // console.log(req.headers.authorization, token);
         if(!token) return responseHandler(res, {status: 401, message: "No token provided."});
         decode_token(token).then((response) => {

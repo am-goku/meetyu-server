@@ -1,10 +1,19 @@
-const dob = new Date('June 26, 2001')
+const prom = (num) => {
+    return new Promise((resolve, reject) => {
+        if(num > 10) resolve("true")
+        else throw new Error("Invalid number")
+    }).catch((err) => {
+        return Promise.reject(err)
+    })
+}
 
-console.log(dob)
 
-
-const current = new Date();
-
-const diff = current.get() - dob.getFullYear();
-
-console.log(diff)
+prom(1).then((result) => {
+    console.log('====================================');
+    console.log(result, 123);
+    console.log('====================================');
+}).catch((err) => {
+    console.log('====================================');
+    console.log(err);
+    console.log('====================================');
+})

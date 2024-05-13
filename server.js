@@ -3,7 +3,6 @@ import dotenv from "dotenv";
 import cors from "cors";
 import logger from "morgan";
 import http from "http";
-import {Server, Socket} from "socket.io";
 
 //importing routers
 import user_router from "./src/routes/user.js";
@@ -24,12 +23,7 @@ const app = express();
 
 //Socket.Io Configuration
 const server = http.createServer(app);
-const io = new Server(server, {
-    cors: {
-      origin: "*",
-      method: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-    },
-  });
+
 
 
 
@@ -54,7 +48,8 @@ app.use(httpMethodsMiddleware);
 
 
 //Socket.IO Connection
-socketIo_Config(io)
+socketIo_Config(server)
+
 
 
 //router level setup
