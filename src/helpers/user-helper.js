@@ -4,147 +4,131 @@ import { User } from "../models/user-schema.js"
 
 
 
-export const get_user_hlpr = (username) => {
-    return new Promise((resolve, reject) => {
-        try {
-            User.findOne({ username, blocked: false, emailVerified: true }).select("-password").then((user) => {
-                resolve({ status: 200, message: "User has been fetched successfully.", user })
-            }).catch((err) => {
-                reject({ status: 400, message: "Error fetching user", err })
-            })
-        } catch (error) {
-            reject({ status: 500, message: "Internal server error.", error })
-        }
-    })
+export const get_user_hlpr = async (username) => {
+    try {
+        const user = await User.findOne({ username, blocked: false, emailVerified: true }).select("-password")
+        return { status: 200, message: "User has been fetched successfully.", user }
+    } catch (error) {
+        return { status: 400, message: "Error fetching user", err }
+    }
 }
 
-export const get_suggesions = (userId) => {
-    return new Promise(async (resolve, reject) => {
-
+export const get_suggesions = async (userId) => {
+    try {
         const connections = await Connections.findOne({ userId });
 
+        const requests_send = connections?.requests_send || [];
         const requests = connections?.requests || [];
         const friends = connections?.friends || [];
 
-        const newUsers = await User.find({ _id: { "$nin": [...requests, ...friends, userId] } }).select("-password");
+        const users = await User.find({ _id: { "$nin": [...requests_send ,...requests, ...friends, userId] } }).select("-password");
 
-        resolve({ status: 200, message: "New users fetched successfully.", users: newUsers })
+        return { status: 200, message: "New users fetched successfully.", users }
 
-    }).catch((error) => {
-        return Promise.reject({ status: 500, message: "Internal Server Error", error })
-    })
+    } catch (error) {
+        return { status: 500, message: "Internal Server Error", error }
+    }
 }
 
 
 // @desc Connection schema related solutions 
-
-
-export const send_request = (fromId, toId) => {
-    return new Promise((resolve, reject) => {
-        try {
+export const send_request = async (fromId, toId) => {
+    try {
+        await Promise.all([
             Connections.findOneAndUpdate({ userId: toId }, {
                 $addToSet: {
                     requests: fromId
                 }
-            }, { upsert: true })
-                .then(() => {
-                    resolve({ status: 200, message: "Request sent successfully." })
-                })
-                .catch((error) => {
-                    reject({ status: 400, message: "Error sending request.", error })
-                })
-        } catch (error) {
-            reject({ status: 500, message: "Internal Server Error", error })
-        }
-    })
-}
-
-
-
-/*
-    @TODO: Have to optimise it by using only one query update
-    @TODO-desc: Update using $in Operator two update two at once
-*/
-export const accept_request = (userId, friendId) => {
-    return new Promise((resolve, reject) => {
-        try {
-            Connections.findOneAndUpdate({ userId: userId }, {
+            }, { upsert: true }),
+            Connections.findOneAndUpdate({ userId: fromId }, {
                 $addToSet: {
-                    friends: friendId
-                }, $pull: {
-                    requests: friendId
+                    requests_send: toId
                 }
-            })
-                .then(() => {
-                    Connections.findOneAndUpdate({ userId: friendId }, {
-                        $addToSet: {
-                            friends: userId
-                        }
-                    })
-                        .then(() => {
-                            resolve({ status: 200, message: "Request accepted successfully." })
-                        })
-                        .catch((error) => {
-                            reject({ status: 400, message: "Error accepting request.", error })
-                        })
-                })
-                .catch((error) => {
-                    reject({ status: 400, message: "Error accepting request.", error })
-                })
-        } catch (error) {
-            reject({ status: 500, message: "Internal Server Error", error })
-        }
-    })
+            }, { upsert: true })
+        ])
+
+        return { status: 200, message: "Request sent successfully." }
+
+    } catch (error) {
+        return { status: 400, message: "Error sending request.", error }
+    }
 }
 
-export const delete_request = (userId, requestId) => {
-    return new Promise((resolve, reject) => {
-        try {
+
+export const accept_request = async (userId, friendId) => {
+    try {
+        await Promise.all([
+            Connections.findOneAndUpdate({ userId: userId }, {
+                $addToSet: { friends: friendId },
+                $pull: { requests: friendId }
+            }),
+            Connections.findOneAndUpdate({ userId: friendId }, {
+                $addToSet: { friends: userId },
+                $pull: { requests_send: userId }
+            })
+        ]);
+        return { status: 200, message: "Request accepted successfully." };
+    } catch (error) {
+        let status = 400;
+        let message = "Error accepting request.";
+        if (error.name === "MongoError" && error.code === 11000) {
+            // Duplicate key error (e.g., if the friend request is already accepted)
+            message = "Request already accepted.";
+        }
+        return { status, message, error };
+    }
+}
+
+
+export const delete_request = async (userId, requestId) => {
+    try {
+        await Promise.all([
+            Connections.findOneAndUpdate({ userId: userId }, {
+                $pull: { requests: requestId }
+            }),
+            Connections.findOneAndUpdate({ userId: requestId }, {
+                $pull: { requests_send: userId }
+            })
+        ])
+
+        return { status: 200, message: "Request deleted successfully." }
+
+    } catch (error) {
+        return { status: 400, message: "Error deleting request", error }
+    }
+}
+
+
+export const remove_friend = async (userId, friendId) => {
+    try {
+        await Promise.all([
             Connections.findOneAndUpdate({ userId: userId }, {
                 $pull: {
-                    requests: requestId
-                }
-            })
-                .then(() => resolve({ status: 200, message: "Request deleted successfully." }))
-                .catch((error) => reject({ status: 400, message: "Error deleting request", error }))
-        } catch (error) {
-            reject({ status: 500, message: "Internal Server Error" })
-        }
-    })
-}
-
-/*
-    @TODO: Only update in one part and have to update in from the 2nd party as well
-    @TODO-desc: Update using $in Operator two update two at once i have to optimise it
-*/
-export const remove_friend = (userId, friendId) => {
-    return new Promise((resolve, reject) => {
-        try {
-            Connections.findOneAndUpdate({ userId: userId }, {
-                $pull: {
                     friends: friendId
                 }
+            }),
+            Connections.findOneAndUpdate({ userId: friendId }, {
+                $pull: {
+                    friends: userId
+                }
             })
-                .then(() => resolve({ status: 200, message: "Error deleting friend" }))
-                .catch((error) => reject({ status: 400, message: "Error accepting request.", error }))
-        } catch (error) {
-            reject({ status: 500, message: "Internal Server Error", error })
-        }
-    })
+        ])
+        return { status: 200, message: "Error deleting friend" }
+
+    } catch (error) {
+        return { status: 400, message: "Error accepting request.", error }
+    }
 }
 
 
-export const get_requests = (userId) => {
-    return new Promise((resolve, reject) => {
-        try {
-            Connections.findOne({ userId }).populate({path: "requests", select: "-password"}).then((connections) => {
-                const requests = connections?.requests || [];
-                resolve({ status: 200, message: "Requests fetched successfully.", requests })
-            }).catch((error) => {
-                reject({ status: 400, message: "Error fetching requests.", error })
-            })
-        } catch (error) {
-            reject({ status: 500, message: "Internal Server Error", error })
-        }
-    })
+export const get_requests = async (userId) => {
+    try {
+        const connections = await Connections.findOne({ userId }).populate({ path: "requests", select: "-password" })
+        const requests = connections?.requests || []
+        const requests_send = connections?.requests_send || []
+
+        return { status: 200, message: "Requests fetched successfully.", requests, requests_send }
+    } catch (error) {
+        return { status: 400, message: "Error fetching requests.", error }
+    }
 }

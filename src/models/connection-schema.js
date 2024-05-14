@@ -18,6 +18,16 @@ const connection_schema = new Schema(
       require: false,
     },
 
+    requests_send: {
+      type: [
+        {
+          type: mongoose.Types.ObjectId,
+          ref: 'user',
+        },
+      ],
+      require: false
+    },
+
     friends: {
       type: [
         {

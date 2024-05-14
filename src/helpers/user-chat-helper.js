@@ -11,7 +11,8 @@ export const create_chatroom_hlpr = (userId, participants, room_name) => {
   return new Promise(async (resolve, reject) => {
     try {
       participants.push(userId);
-
+      //TODO: Now that i have only single function to manage chat room 
+      //      but its optimised for chat groups not for two person chats.
       if (participants.length < 3)
         return reject({
           status: 400,
