@@ -36,9 +36,14 @@ const messageSchema = new Schema({
         require: true
     },
 
-    deleted: {
-        type: Boolean,
-        require: false
+    deleted_from: {
+        type: [
+            {
+                type: mongoose.Types.ObjectId,
+                ref: 'user',
+            }
+        ],
+        required: false
     }
 }, {
     timestamps: true,

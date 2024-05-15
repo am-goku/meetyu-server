@@ -33,8 +33,3 @@ export const userAuth = (req, res, next) => {
         responseHandler(res, {status: 500, error});
     }
 }
-
-
-// @desc   User Authentication Method
-// @Route  MIDDLEWARE
-// @access Public

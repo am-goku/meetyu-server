@@ -23,10 +23,8 @@ router.get('/fetch-suggesions', userAuth, fetch_suggestions);
 router.post('/connection/request/send/:id', userAuth, send_request_controller)
 router.post('/connection/request/delete/:id', userAuth, delete_request_controller)
 router.post('/connection/request/accept/:id', userAuth, accept_request_controller)
-router.post('/connection/friend/remove/:id', userAuth, remove_friend_controller)
-
-
 router.get('/connection/request/fetch', userAuth, get_requests_controller)
+router.post('/connection/friend/remove/:id', userAuth, remove_friend_controller)
 
 
 

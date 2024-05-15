@@ -16,18 +16,14 @@ import responseHandler from "../utils/responseHandler.js";
     @Route  POST /api/v1/chat/create-chatroom
     @access Protected - (Authenticated user)
 */
-export const create_chat_room = (req, res) => {
+export const create_chat_room = async (req, res) => {
   try {
     const userId = req.user?._id;
-    const { participants, room_name } = req.body;
+    const { participants, room_name, type } = req.body;
 
-    create_chatroom_hlpr(userId, participants, room_name)
-      .then((data) => {
-        responseHandler(res, data);
-      })
-      .catch((err) => {
-        responseHandler(res, err);
-      });
+    const data = await create_chatroom_hlpr(userId, participants, room_name, type)
+    responseHandler(res, data);
+
   } catch (error) {
     responseHandler(res, error);
   }
@@ -38,16 +34,13 @@ export const create_chat_room = (req, res) => {
     @Route  POST /api/v1/chat/get-chatrooms
     @access Protected - (Authenticated user)
 */
-export const get_chat_rooms = (req, res) => {
+export const get_chat_rooms = async (req, res) => {
   try {
     const userId = req.user?._id;
-    get_chatrooms_hlpr(userId)
-      .then((data) => {
-        responseHandler(res, data);
-      })
-      .catch((err) => {
-        responseHandler(res, err);
-      });
+
+    const data = await get_chatrooms_hlpr(userId)
+    responseHandler(res, data);
+
   } catch (error) {
     responseHandler(res, error);
   }
@@ -59,17 +52,14 @@ export const get_chat_rooms = (req, res) => {
     @Body   {roomId, userId}
     @access Protected - (Authenticated user)
 */
-export const delete_chatroom = (req, res) => {
+export const delete_chatroom = async (req, res) => {
   try {
     const { roomId } = req.body;
     const userId = req.user._id;
-    delete_chatrooms_hlpr(roomId, userId)
-      .then((data) => {
-        responseHandler(res, data);
-      })
-      .catch((error) => {
-        responseHandler(res, error);
-      });
+
+    const data = await delete_chatrooms_hlpr(roomId, userId)
+    responseHandler(res, data);
+
   } catch (error) {
     responseHandler(res, error);
   }
@@ -81,17 +71,14 @@ export const delete_chatroom = (req, res) => {
     @Body   {roomId, adminId, userId}
     @access Protected - (Authenticated user)
 */
-export const add_admin = (req, res) => {
+export const add_admin = async (req, res) => {
   try {
     const { roomId, adminId } = req.body;
     const userId = req.user._id;
-    add_admin_hlpr(roomId, userId, adminId)
-      .then((data) => {
-        responseHandler(res, data);
-      })
-      .catch((error) => {
-        responseHandler(res, error);
-      });
+
+    const data = await add_admin_hlpr(roomId, userId, adminId)
+    responseHandler(res, data);
+
   } catch (error) {
     responseHandler(res, error);
   }
@@ -103,17 +90,14 @@ export const add_admin = (req, res) => {
     @Body   {roomId, adminId, userId}
     @access Protected - (Authenticated user)
 */
-export const remove_admin = (req, res) => {
+export const remove_admin = async (req, res) => {
   try {
     const { roomId, adminId } = req.body;
     const userId = req.user._id;
-    remove_admin_hlpr(roomId, adminId, userId)
-      .then((data) => {
-        responseHandler(res, data);
-      })
-      .catch((error) => {
-        responseHandler(res, error);
-      });
+
+    const data = remove_admin_hlpr(roomId, adminId, userId)
+    responseHandler(res, data);
+
   } catch (error) {
     responseHandler(res, error);
   }
@@ -125,18 +109,14 @@ export const remove_admin = (req, res) => {
     @Body   {room_name, background, icon}
     @access Protected - (Authenticated user)
 */
-export const update_chatroom = (req, res) => {
+export const update_chatroom = async (req, res) => {
   try {
     const roomId = req.params;
     const userId = req.user?._id;
 
-    update_chatroom_hlpr(roomId, userId, req.body)
-      .then((data) => {
-        responseHandler(res, data);
-      })
-      .catch((error) => {
-        responseHandler(res, error);
-      });
+    const data = await update_chatroom_hlpr(roomId, userId, req.body)
+    responseHandler(res, data);
+
   } catch (error) {
     responseHandler(res, error);
   }
@@ -148,19 +128,15 @@ export const update_chatroom = (req, res) => {
     @Body   {participants:[Array]}
     @access Protected - (Authenticated user)
 */
-export const add_user = (req, res) => {
+export const add_user = async (req, res) => {
   try {
     const { roomId } = req.params;
     const userId = req.user?._id;
     const { participants } = req.body;
 
-    add_user_hlpr(roomId, userId, participants)
-      .then((data) => {
-        responseHandler(res, data);
-      })
-      .catch((error) => {
-        responseHandler(res, error);
-      });
+    const data = await add_user_hlpr(roomId, userId, participants)
+    responseHandler(res, data)
+
   } catch (error) {
     responseHandler(res, error);
   }
@@ -172,19 +148,15 @@ export const add_user = (req, res) => {
     @Body   {participants:[Array]}
     @access Protected - (Authenticated user)
 */
-export const remove_user = (req, res) => {
+export const remove_user = async (req, res) => {
   try {
     const { roomId } = req.params;
     const userId = req.user?._id;
     const { participants } = req.body;
 
-    remove_user_hlpr(roomId, userId, participants)
-      .then((data) => {
-        responseHandler(res, data);
-      })
-      .catch((error) => {
-        responseHandler(res, error);
-      });
+    const data = await remove_user_hlpr(roomId, userId, participants)
+    responseHandler(res, data)
+
   } catch (error) {
     responseHandler(res, error);
   }
@@ -196,17 +168,14 @@ export const remove_user = (req, res) => {
     @Body   {roomId, userId, adminId}
     @access Protected - (Authenticated user)
 */
-export const change_owner = (req, res) => {
+export const change_owner = async (req, res) => {
   try {
     const { roomId, adminId } = req.params;
     const userId = req.user._id;
-    change_owner_hlpr(roomId, userId, adminId)
-      .then((data) => {
-        responseHandler(res, data);
-      })
-      .catch((error) => {
-        responseHandler(res, error);
-      });
+
+    const data = await change_owner_hlpr(roomId, userId, adminId)
+    responseHandler(res, data)
+
   } catch (error) {
     responseHandler(res, error);
   }

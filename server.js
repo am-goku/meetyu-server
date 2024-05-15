@@ -8,6 +8,7 @@ import http from "http";
 import user_router from "./src/routes/user.js";
 import auth_router from "./src/routes/auth.js";
 import chat_router from "./src/routes/chat.js";
+import message_router from "./src/routes/message.js";
 import httpMethodsMiddleware from "./src/middlewares/httpMethodsMiddleware.js";
 import connect_db from "./src/config/db.js";
 import socketIo_Config from "./src/services/socketIo.js";
@@ -56,6 +57,7 @@ socketIo_Config(server)
 app.use("/api/v1/user", user_router);
 app.use("/api/v1/auth", auth_router);
 app.use("/api/v1/chat", chat_router);
+app.use("/api/v1/message", message_router);
 
 
 server.listen(PORT, () => {

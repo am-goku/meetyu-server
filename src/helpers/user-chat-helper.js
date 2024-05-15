@@ -7,33 +7,42 @@ import { Chatroom } from "../models/chatroom-schema.js";
     @Route  POST /api/v1/chat/create-chatroom
     @access Protected - (Authenticated user)
   */
-export const create_chatroom_hlpr = (userId, participants, room_name) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      participants.push(userId);
-      //TODO: Now that i have only single function to manage chat room 
-      //      but its optimised for chat groups not for two person chats.
-      if (participants.length < 3)
-        return reject({
+export const create_chatroom_hlpr = async (userId, participants, room_name, type) => {
+  try {
+    participants.push(userId);
+    let query = null;
+
+    if (type === "group") {
+      if (participants.length < 3) {
+        return {
           status: 400,
           message: "Atleast 3 participants are required.",
-        });
+        }
+      }
 
-      const newRoom = new Chatroom({
+      query = {
         users: participants.sort(),
         room_name,
         createdBy: userId,
         room_admins: [userId],
         owner: userId,
-      });
+      }
 
-      await newRoom.save();
-
-      resolve({ status: 201, message: "Chat room created successfully." });
-    } catch (error) {
-      reject({ status: 500, message: "Internal server error", error });
+    } else {
+      query = {
+        users: participants.sort(),
+        createdBy: userId,
+      }
     }
-  });
+
+    const newRoom = new Chatroom(query);
+
+    await newRoom.save();
+
+    return { status: 201, message: "Chat room created successfully." }
+  } catch (error) {
+    return { status: 500, message: "Internal server error", error }
+  }
 };
 
 /*
@@ -41,23 +50,16 @@ export const create_chatroom_hlpr = (userId, participants, room_name) => {
     @Route  GET /api/v1/chat/get-chatrooms
     @access Protected - (Authenticated user)
   */
-export const get_chatrooms_hlpr = (userId) => {
-  return new Promise((resolve, reject) => {
-    try {
-      Chatroom.aggregate([
-        { $match: { users: { $in: [userId] } } },
-        { $sort: { updatedAt: -1 } },
-      ])
-        .then((chatRooms) => {
-          resolve({ status: 200, rooms: chatRooms });
-        })
-        .catch((err) => {
-          reject({ status: 500, message: "Database error", error: err });
-        });
-    } catch (error) {
-      reject({ status: 400, message: "Internal server error", error });
-    }
-  });
+export const get_chatrooms_hlpr = async (userId) => {
+  try {
+    const chatRooms = await Chatroom.aggregate([
+      { $match: { users: { $in: [userId] } } },
+      { $sort: { updatedAt: -1 } },
+    ])
+    return { status: 200, rooms: chatRooms }
+  } catch (error) {
+    return { status: 500, message: "Error fetching chat rooms", error: err }
+  }
 };
 
 /*
@@ -66,23 +68,18 @@ export const get_chatrooms_hlpr = (userId) => {
     @Body   {roomId, userId}
     @access Protected - (Authenticated user)
   */
-export const delete_chatrooms_hlpr = (roomId, userId) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      Chatroom.updateOne(
-        { _id: roomId, owner: userId },
-        { $set: { deleted: true } }
-      )
-        .then((res) => {
-          resolve({ status: 200, message: "Room deleted successfully" });
-        })
-        .catch((err) => {
-          reject({ status: 500, message: "Error deleting chatroom." });
-        });
-    } catch (error) {
-      reject({ status: 400, message: "Internal server error", error });
-    }
-  });
+export const delete_chatrooms_hlpr = async (roomId, userId) => {
+  try {
+    await Chatroom.updateOne(
+      { _id: roomId, owner: userId },
+      { $set: { deleted: true } }
+    )
+
+    return { status: 200, message: "Room deleted successfully" }
+
+  } catch (error) {
+    return { status: 500, message: "Error deleting chatroom." }
+  }
 };
 
 /*
@@ -91,30 +88,25 @@ export const delete_chatrooms_hlpr = (roomId, userId) => {
     @Body   {room_name, background, icon}
     @access Protected - (Authenticated user)
   */
-export const update_chatroom_hlpr = (roomId, userId, data) => {
-  return new Promise((resolve, reject) => {
-    try {
-      const { room_name, background, icon } = data;
+export const update_chatroom_hlpr = async (roomId, userId, data) => {
+  try {
+    const { room_name, background, icon } = data;
 
-      const query = {};
-      if (room_name) query["room_name"] = room_name;
-      if (background) query["background"] = background;
-      if (icon) query["icon"] = icon;
+    const query = {};
+    if (room_name) query["room_name"] = room_name;
+    if (background) query["background"] = background;
+    if (icon) query["icon"] = icon;
 
-      Chatroom.updateOne(
-        { _id: roomId, room_admins: { $in: [userId] } },
-        { $set: query }
-      )
-        .then((response) => {
-          resolve({ status: 201, message: "Chatroom updated successfully." });
-        })
-        .catch((error) => {
-          reject({ status: 400, message: "Error updating chatroom." });
-        });
-    } catch (error) {
-      reject({ status: 500, message: "Error updating chatroom" });
-    }
-  });
+    await Chatroom.updateOne(
+      { _id: roomId, room_admins: { $in: [userId] } },
+      { $set: query }
+    )
+
+    return { status: 201, message: "Chatroom updated successfully." }
+
+  } catch (error) {
+    return { status: 400, message: "Error updating chatroom." }
+  }
 };
 
 //@desc   Chatroom Ownership Operations
@@ -122,29 +114,24 @@ export const update_chatroom_hlpr = (roomId, userId, data) => {
     @desc   Remove an admin from a chat room.
     @Route  DELETE /api/v1/chat/remove-admin 
     @Body   {roomId, adminId, userId}
-    @access Protected - (Authenticated user)
+    @access Protected - (Authenticated user && Chatroom owner)
   */
-export const remove_admin_hlpr = (roomId, adminId, userId) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      Chatroom.updateOne(
-        { _id: roomId, owner: userId },
-        { $pull: { room_admins: adminId } }
-      )
-        .then((response) => {
-          resolve({ status: 200, message: "Admin removed successfully." });
-        })
-        .catch((err) => {
-          reject({
-            status: 500,
-            message: "Error removing admin",
-            error: err,
-          });
-        });
-    } catch (error) {
-      reject({ status: 400, message: "Internal server error", error });
+export const remove_admin_hlpr = async (roomId, adminId, userId) => {
+  try {
+    await Chatroom.updateOne(
+      { _id: roomId, owner: userId },
+      { $pull: { room_admins: adminId } }
+    )
+
+    return { status: 200, message: "Admin removed successfully." }
+
+  } catch (error) {
+    return {
+      status: 500,
+      message: "Error removing admin",
+      error: err,
     }
-  });
+  }
 };
 
 /*
@@ -153,27 +140,22 @@ export const remove_admin_hlpr = (roomId, adminId, userId) => {
     @Body   {roomId, adminId, userId}
     @access Protected - (Authenticated user)
   */
-export const add_admin_hlpr = (roomId, userId, adminId) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      Chatroom.updateOne(
-        { _id: roomId, owner: userId },
-        { $addToSet: { room_admins: adminId } }
-      )
-        .then((response) => {
-          resolve({ status: 200, message: "Admin added successfully" });
-        })
-        .catch((error) => {
-          reject({
-            status: 400,
-            message: "Error adding admin.",
-            error: error,
-          });
-        });
-    } catch (error) {
-      reject({ status: 400, message: "Internal server error", error });
+export const add_admin_hlpr = async (roomId, userId, adminId) => {
+  try {
+    await Chatroom.updateOne(
+      { _id: roomId, owner: userId },
+      { $addToSet: { room_admins: adminId } }
+    )
+
+    return { status: 200, message: "Admin added successfully" }
+
+  } catch (error) {
+    return {
+      status: 400,
+      message: "Error adding admin.",
+      error: error,
     }
-  });
+  }
 };
 
 /*
@@ -182,29 +164,23 @@ export const add_admin_hlpr = (roomId, userId, adminId) => {
     @Body   {roomId, userId, adminId}
     @access Protected - (Authenticated user)
   */
-export const change_owner_hlpr = (roomId, userId, adminId) => {
-  return new Promise((resolve, reject) => {
-    try {
-      Chatroom.updateOne(
-        { _id: roomId, owner: userId },
-        { $set: { owner: adminId } },
-        { new: true }
-      )
-        .then((chatroom) => {
-          resolve({
-            status: 200,
-            message: "Owner has been updated.",
-            chatroom,
-          });
-        })
-        .catch((error) => {
-          reject({ status: 400, message: "Error updating owner.", error });
-        });
-    } catch (error) {
-      reject({ status: 500, message: "Internal server error.", error });
+export const change_owner_hlpr = async (roomId, userId, adminId) => {
+  try {
+    const chatroom = await Chatroom.updateOne(
+      { _id: roomId, owner: userId },
+      { $set: { owner: adminId } },
+      { new: true }
+    )
+    return {
+      status: 200,
+      message: "Owner has been updated.",
+      chatroom,
     }
-  });
+  } catch (error) {
+    return { status: 400, message: "Error updating owner.", error }
+  }
 };
+
 //@desc   Chatroom Ownership Operations
 /*
     @desc   Add new user/users to chat room.
@@ -212,27 +188,18 @@ export const change_owner_hlpr = (roomId, userId, adminId) => {
     @Body   {participants:[Array]}
     @access Protected - (Authenticated user)
   */
-export const add_user_hlpr = (roomId, userId, participants) => {
-  return new Promise((resolve, reject) => {
-    try {
-      Chatroom.updateOne(
-        { _id: roomId, room_admins: { $in: [userId] } },
-        { $addToSet: { users: { $each: participants } } }
-      )
-        .then(() => {
-          resolve({ status: 200, message: "User added successfully" });
-        })
-        .catch(() => {
-          reject({ status: 400, message: "Error adding user" });
-        });
-    } catch (error) {
-      reject({
-        status: 500,
-        message: "Internal server error",
-        error: error,
-      });
-    }
-  });
+export const add_user_hlpr = async (roomId, userId, participants) => {
+  try {
+    await Chatroom.updateOne(
+      { _id: roomId, room_admins: { $in: [userId] } },
+      { $addToSet: { users: { $each: participants } } }
+    )
+
+    return { status: 200, message: "User added successfully" }
+
+  } catch (error) {
+    return { status: 400, message: "Error adding user" }
+  }
 };
 
 /*
@@ -241,21 +208,16 @@ export const add_user_hlpr = (roomId, userId, participants) => {
     @Body   {participants:[Array]}
     @access Protected - (Authenticated user)
   */
-export const remove_user_hlpr = (roomId, userId, participants) => {
-  return new Promise((resolve, reject) => {
-    try {
-      Chatroom.updateOne(
-        { _id: roomId, room_admins: { $in: [userId] } },
-        { $pull: { users: { $each: participants } } }
-      )
-        .then(() => {
-          resolve({ status: 200, message: "User has been removed." });
-        })
-        .catch(() => {
-          reject({ status: 400, message: "Error removing user." });
-        });
-    } catch (error) {
-      reject({ status: 500, message: "Internal server error", error: error });
-    }
-  });
+export const remove_user_hlpr = async (roomId, userId, participants) => {
+  try {
+    await Chatroom.updateOne(
+      { _id: roomId, room_admins: { $in: [userId] } },
+      { $pull: { users: { $each: participants } } }
+    )
+
+    return { status: 200, message: "User has been removed." }
+  
+  } catch (error) {
+    return { status: 400, message: "Error removing user." }
+  }
 };
