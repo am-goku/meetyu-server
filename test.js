@@ -1,20 +1,7 @@
-const asyncFuntion = () => {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            resolve("Hello world!");
-        }, 2000)
-    })
-}
+const a = [1,2,4];
 
+const b = [1,2,4];
 
-
-const abc =  () => {
-    try {
-         Promise.all([asyncFuntion()]);
-
-        return {status: 200, message: "Done"}
-    } catch (error) {
-        return {status: 500, error}
-    }
-}
-
+console.log('====================================');
+console.log(a==[1,2,4]);
+console.log('====================================');

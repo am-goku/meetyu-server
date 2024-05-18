@@ -35,6 +35,14 @@ export const get_suggesions = async (userId) => {
 // @desc Connection schema related solutions 
 export const send_request = async (fromId, toId) => {
     try {
+
+        const isConnected = await Connections.findOne({ userId: fromId, requests: {$in: [toId]} });
+
+        if(isConnected){
+            return accept_request(fromId, toId);
+        }
+
+
         await Promise.all([
             Connections.findOneAndUpdate({ userId: toId }, {
                 $addToSet: {
@@ -131,5 +139,16 @@ export const get_requests = async (userId) => {
         return { status: 200, message: "Requests fetched successfully.", requests, requests_send }
     } catch (error) {
         return { status: 400, message: "Error fetching requests.", error }
+    }
+}
+
+
+export const get_friends = async (userId) => {
+    try {
+        const connections = await Connections.findOne({userId}).populate({ path: "friends", select: "-password"}).exec();
+
+        return {status: 200, message: "Friends fetched successfully.", friends: connections.friends || []}
+    } catch (error) {
+        return { status: 400, message: "Error fetching friends.", error }
     }
 }

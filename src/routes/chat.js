@@ -36,7 +36,7 @@ router.get('/get-chatrooms', userAuth, get_chat_rooms);
     @Body   {roomId, userId}
     @access Protected - (Authenticated user)
 */
-router.delete('/delete-chatroom', userAuth, delete_chatroom);
+router.delete('/delete-chatroom/:roomId', userAuth, delete_chatroom);
 
 
 /*

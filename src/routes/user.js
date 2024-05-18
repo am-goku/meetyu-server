@@ -5,6 +5,7 @@ import {
     accept_request_controller, 
     delete_request_controller, 
     fetch_suggestions, 
+    get_friends_controller, 
     get_requests_controller, 
     remove_friend_controller, 
     send_request_controller 
@@ -25,6 +26,7 @@ router.post('/connection/request/delete/:id', userAuth, delete_request_controlle
 router.post('/connection/request/accept/:id', userAuth, accept_request_controller)
 router.get('/connection/request/fetch', userAuth, get_requests_controller)
 router.post('/connection/friend/remove/:id', userAuth, remove_friend_controller)
+router.get('/connection/friend/fetch', userAuth, get_friends_controller)
 
 
 

@@ -4,6 +4,7 @@ import {
   change_owner_hlpr,
   create_chatroom_hlpr,
   delete_chatrooms_hlpr,
+  fetch_room_hlpr,
   get_chatrooms_hlpr,
   remove_admin_hlpr,
   remove_user_hlpr,
@@ -46,6 +47,16 @@ export const get_chat_rooms = async (req, res) => {
   }
 };
 
+
+export const fetch_room = async (req, res) => {
+  try {
+    const data = await fetch_room_hlpr(req.params.roomId, req.user._id);
+    responseHandler(res, data);
+  } catch (error) {
+    responseHandler(res, error)
+  }
+}
+
 /*
     @desc   Delete a chat room.
     @Route  DELETE /api/v1/chat/delete-chatrooms 
@@ -54,7 +65,7 @@ export const get_chat_rooms = async (req, res) => {
 */
 export const delete_chatroom = async (req, res) => {
   try {
-    const { roomId } = req.body;
+    const { roomId } = req.params;
     const userId = req.user._id;
 
     const data = await delete_chatrooms_hlpr(roomId, userId)

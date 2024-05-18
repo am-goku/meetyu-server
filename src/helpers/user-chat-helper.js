@@ -33,13 +33,20 @@ export const create_chatroom_hlpr = async (userId, participants, room_name, type
         users: participants.sort(),
         createdBy: userId,
       }
+
+      const OldRooms = await Chatroom.find({users: {$all: participants}});
+
+      const OldRoom = OldRooms.filter(room => room.users.length === 2);
+
+      if(OldRoom.length > 0) return { status: 409, message: "Chat Room already exists", room: OldRoom[0] }
+      
     }
 
     const newRoom = new Chatroom(query);
 
-    await newRoom.save();
+    const room = await newRoom.save();
 
-    return { status: 201, message: "Chat room created successfully." }
+    return { status: 201, message: "Chat room created successfully.", room }
   } catch (error) {
     return { status: 500, message: "Internal server error", error }
   }
@@ -52,15 +59,43 @@ export const create_chatroom_hlpr = async (userId, participants, room_name, type
   */
 export const get_chatrooms_hlpr = async (userId) => {
   try {
-    const chatRooms = await Chatroom.aggregate([
-      { $match: { users: { $in: [userId] } } },
-      { $sort: { updatedAt: -1 } },
-    ])
-    return { status: 200, rooms: chatRooms }
+    const chatRooms = await Chatroom.find({ users: { $in: [userId] }}).populate({ path: 'users', select: "-password"}).sort("updatedAt")
+
+
+    const rooms = chatRooms.map(chatRoom => {
+      const roomObj = chatRoom.toObject();
+      roomObj.users = roomObj.users.filter(user => String(user._id) !== String(userId));
+      return roomObj;
+    });
+
+
+    console.log('====================================');
+    console.log("Chatrooms: ", rooms);
+    console.log('====================================');
+
+    return { status: 200, rooms }
   } catch (error) {
-    return { status: 500, message: "Error fetching chat rooms", error: err }
+    return { status: 500, message: "Error fetching chat rooms", error }
   }
 };
+
+
+export const fetch_room_hlpr = async (roomId, userId) => {
+  try {
+    const room = await Chatroom.findOne({ users: { $in: [roomId] } }).populate({ path: 'users', select: "-password" });
+
+    const participants = room.users.filter(user => user._id !== userId);
+
+    const chatRoom = room.toObject();
+
+    chatRoom.users = participants;
+
+    return { status: 200, message: "Room has been fetched.", room: chatRoom }
+  } catch (error) {
+    return { status: 500, message: "Error fetching chat room", error }
+  }
+}
+
 
 /*
     @desc   Delete a chat room.

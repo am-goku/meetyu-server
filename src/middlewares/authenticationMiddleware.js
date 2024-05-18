@@ -23,7 +23,7 @@ export const userAuth = (req, res, next) => {
 
                 next();
             }).catch((error) => {
-                throw new Error(error.message)
+                responseHandler(res, {status:401, message: "DB Error", error});
             })
         }).catch((error) => {
             responseHandler(res, {status:401, message: "Invalid token.", error});
