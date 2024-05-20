@@ -1,5 +1,4 @@
 import { Server } from 'socket.io';
-import Emitter from '../utils/emitter.js';
 
 const userSockets = {};
 
@@ -26,16 +25,33 @@ const socketIo_Config = (server) => {
                 console.log('====================================');
             })
 
-            socket.on("open-room", (roomId) => {
+            socket.on("open-room", ({ roomId }) => {
                 console.log('====================================');
                 console.log("Room opened", roomId);
 
-                socket.join(roomId);    // join the room for chat
+                // if (oldRoom) {
+                //     console.log("OldRoom- leaving", newRoom);
+                //     socket.leave(oldRoom);
+                // }
 
-                socket.on('send-message', (message) => {    //recieved message on socket
-                    io.to(roomId).emit('recieve-message', message); //send message to room
-                })
+                socket.join(roomId);    // join the room for chat
             })
+
+
+            socket.on('leave-room', ({ roomId }) => {
+                socket.leave(roomId);
+                console.log(`User left room ${roomId}`);
+            });
+
+            socket.on('send-message', ({ message, roomId }) => {    //recieved message on socket
+                console.log('====================================');
+                console.log("Sending message", message, 'to', roomId);
+                console.log('====================================');
+                io.to(roomId).emit('recieve-message', message); //send message to room
+            })
+
+            
+
 
             socket.on('disconnect', () => {
                 const userId = Object.keys(userSockets).find(

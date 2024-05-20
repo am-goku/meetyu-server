@@ -27,6 +27,12 @@ const chatRoomSchema = new Schema({
     require: true
   },
 
+  type: {
+    type: String,
+    require: true,
+    default: "private"
+  },
+
   owner: {
     type: mongoose.Types.ObjectId,
     ref: 'user',

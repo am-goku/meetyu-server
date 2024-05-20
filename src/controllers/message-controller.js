@@ -18,6 +18,7 @@ export const new_message_controller = async (req, res) => {
         responseHandler(res, data)
 
     } catch (error) {
+        
         responseHandler(res, error)
     }
 }
@@ -40,6 +41,9 @@ export const fetch_message_controller = async (req, res) => {
         responseHandler(res, data)
 
     } catch (error) {
+        console.log('====================================');
+        console.log("error: " + error);
+        console.log('====================================');
         responseHandler(res, error)
     }
 }
