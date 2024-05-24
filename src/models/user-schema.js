@@ -32,6 +32,11 @@ const userSchema = new Schema({
         require: false
     },
 
+    gender: {
+        type: String,
+        require: false
+    },
+
     emailVerified: {
         type: Boolean,
         require: true,

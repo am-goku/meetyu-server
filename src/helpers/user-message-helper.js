@@ -1,5 +1,6 @@
 import { Chatroom } from "../models/chatroom-schema.js";
 import { Message } from "../models/message-schema.js"
+import Emitter from "../utils/emitter.js";
 
 
 /**
@@ -39,7 +40,10 @@ export const new_message = async (roomId, userId, type, message) => {
 
         const data = await newMessage.save();
 
-        await Chatroom.findOneAndUpdate({ _id: roomId }, { last_message: data?._id })
+        const room = await Chatroom.findOneAndUpdate({ _id: roomId }, { last_message: data?._id }).populate({path: 'users', select: '-password'})
+
+        //TODO: Not working properly
+        // Emitter.emit('new-message', {room, recievers: room.users})
 
         return { status: 200, message: "Message saved successfully.", data }
 

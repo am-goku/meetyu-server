@@ -1,4 +1,5 @@
 import { Server } from 'socket.io';
+import Emitter from '../utils/emitter.js';
 
 const userSockets = {};
 
@@ -60,6 +61,16 @@ const socketIo_Config = (server) => {
         console.log("Error in socket configuration", error);
     }
 }
+
+//TODO: Not working properly
+// Emitter.on('new-message', ({room, recievers}) => {
+//     console.log("room from emmiter", room, recievers);
+//     recievers.forEach(u => {
+//         if(userSockets[u._id]){
+//             userSockets[u._id].emit('new-message', {room})
+//         }
+//     });
+// })
 
 
 export default socketIo_Config;
