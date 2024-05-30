@@ -1,3 +1,6 @@
+import Filter from 'bad-words'
+const filter = new Filter()
+
 import { Chatroom } from "../models/chatroom-schema.js";
 import { Message } from "../models/message-schema.js"
 import Emitter from "../utils/emitter.js";
@@ -28,11 +31,13 @@ export const new_message = async (roomId, userId, type, message) => {
 
         let query = null;
 
+        const filteredMessage = filter.clean(message);
+
         if (type === "text" || type === "link") {
             query = {
                 roomId,
                 sender: userId,
-                message
+                message: filteredMessage
             }
         }
 
@@ -40,10 +45,14 @@ export const new_message = async (roomId, userId, type, message) => {
 
         const data = await newMessage.save();
 
-        const room = await Chatroom.findOneAndUpdate({ _id: roomId }, { last_message: data?._id }).populate({path: 'users', select: '-password'})
+        const room = await Chatroom.findOneAndUpdate({ _id: roomId }, { last_message: data?._id }, {new: true}).populate({ path: 'users', select: '-password' }).populate('last_message')
+        // await room.
 
-        //TODO: Not working properly
-        // Emitter.emit('new-message', {room, recievers: room.users})
+        /**
+         * Emit a new message event.
+         * @param {Object} data - An object containing the chatroom and the list of users who received the message.
+         */
+        Emitter.emit('new-message', { room, recievers: room.users })
 
         return { status: 200, message: "Message saved successfully.", data }
 

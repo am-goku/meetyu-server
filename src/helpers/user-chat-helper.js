@@ -59,21 +59,9 @@ export const create_chatroom_hlpr = async (userId, participants, room_name, type
   */
 export const get_chatrooms_hlpr = async (userId) => {
   try {
-    const chatRooms = await Chatroom.find({ users: { $in: [userId] }}).populate({ path: 'users', select: "-password"}).sort("updatedAt")
+    const chatRooms = await Chatroom.find({ users: { $in: [userId] }}).populate({ path: 'users', select: "-password"}).populate('last_message').sort("-updatedAt")
 
-
-    const rooms = chatRooms.map(chatRoom => {
-      const roomObj = chatRoom.toObject();
-      roomObj.users = roomObj.users.filter(user => String(user._id) !== String(userId));
-      return roomObj;
-    });
-
-
-    console.log('====================================');
-    console.log("Chatrooms: ", rooms);
-    console.log('====================================');
-
-    return { status: 200, rooms }
+    return { status: 200, rooms:chatRooms }
   } catch (error) {
     return { status: 500, message: "Error fetching chat rooms", error }
   }
@@ -82,7 +70,7 @@ export const get_chatrooms_hlpr = async (userId) => {
 
 export const fetch_room_hlpr = async (roomId, userId) => {
   try {
-    const room = await Chatroom.findOne({ users: { $in: [roomId] } }).populate({ path: 'users', select: "-password" });
+    const room = await Chatroom.findOne({ users: { $in: [roomId] } }).populate({ path: 'users', select: "-password" }).populate('last_message');
 
     const participants = room.users.filter(user => user._id !== userId);
 

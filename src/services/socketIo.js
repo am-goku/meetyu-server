@@ -62,15 +62,15 @@ const socketIo_Config = (server) => {
     }
 }
 
-//TODO: Not working properly
-// Emitter.on('new-message', ({room, recievers}) => {
-//     console.log("room from emmiter", room, recievers);
-//     recievers.forEach(u => {
-//         if(userSockets[u._id]){
-//             userSockets[u._id].emit('new-message', {room})
-//         }
-//     });
-// })
+
+Emitter.on('new-message', ({room, recievers}) => {
+    console.log("room from emmiter", room, recievers);
+    recievers.forEach(u => {
+        if(userSockets[u._id]){
+            userSockets[u._id].emit('new-message', {room})
+        }
+    });
+})
 
 
 export default socketIo_Config;
